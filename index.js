@@ -45,6 +45,26 @@ app.get('/events/:id', async(req,res)=>{
     res.send(result)
 })
 
+app.put('/events/:id', async (req,res)=>{
+const {id} = req.params
+const data = req.body 
+const result = await eventCollection.updateOne(
+    {_id: new ObjectId(id)},
+    {$set:data}
+)
+res.send(result)
+
+})
+
+app.delete('/events/:id', async (req,res)=>{
+    const {id} = req.params
+    const result = await eventCollection.deleteOne({_id:new ObjectId(id)})
+    res.send(result)
+})
+app.post('/joined-events', async (req,res)=>{
+const 
+})
+
 
 
    app.listen(PORT, () => {
