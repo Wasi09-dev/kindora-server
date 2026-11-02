@@ -21,7 +21,7 @@ export async function connectToMongoDB() {
 const mongoClient = await connectToMongoDB()
 const db = mongoClient.db("kindora")
 const eventCollection = db.collection("event")
-
+const joinCollection = db.collection("joins");
 
 
 
@@ -61,11 +61,17 @@ app.delete('/events/:id', async (req,res)=>{
     const result = await eventCollection.deleteOne({_id:new ObjectId(id)})
     res.send(result)
 })
-app.post('/joined-events', async (req,res)=>{
-const 
-})
 
+app.post("/join-event", async (req, res) => {
+  const result = await joinCollection.insertOne(req.body);
+  res.send(result);
+});
 
+app.get("/joined-events", async (req, res) => {
+  const result = await joinCollection.find({ userEmail: req.query.email }).toArray();
+
+  res.send(result);
+});
 
    app.listen(PORT, () => {
      console.log(`Server running on port ${PORT}`);
