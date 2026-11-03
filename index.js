@@ -23,7 +23,14 @@ const db = mongoClient.db("kindora")
 const eventCollection = db.collection("event")
 const joinCollection = db.collection("joins");
 
-
+const verifyToken = (req,res,next)=>{
+    const authHeader = req.headers.authorization
+    console.log(authHeader)
+    if(authHeader !== "user loged in"){
+        return res.status(401).send({message:"unauthorized access"})
+    }
+    next()
+}
 
 
 // http://localhost:5000/add-event
@@ -39,7 +46,7 @@ app.get('/events', async (req , res)=>{
     res.send(result)
 })
 
-app.get('/events/:id', async(req,res)=>{
+app.get('/events/:id', verifyToken, async(req,res)=>{
     const {id} = req.params
     const result = await eventCollection.findOne({_id: new ObjectId(id)})
     res.send(result)
