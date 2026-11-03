@@ -98,3 +98,5 @@ app.get("/joined-events", async (req, res) => {
    app.listen(PORT, () => {
      console.log(`Server running on port ${PORT}`);
    });
+
+ 
