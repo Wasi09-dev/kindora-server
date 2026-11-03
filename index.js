@@ -2,6 +2,7 @@ import express from "express";
  import cors from "cors";
 import 'dotenv/config'
 import { MongoClient, ObjectId } from 'mongodb';
+import { createRemoteJWKSet, jwtVerify } from "jose";
 const PORT = 5000
  const app = express()
 app.use(cors())
@@ -23,16 +24,30 @@ const db = mongoClient.db("kindora")
 const eventCollection = db.collection("event")
 const joinCollection = db.collection("joins");
 
-const verifyToken = (req,res,next)=>{
-    const authHeader = req.headers.authorization
-    console.log(authHeader)
-    if(authHeader !== "user loged in"){
-        return res.status(401).send({message:"unauthorized access"})
-    }
-    next()
-}
+const JWKS = createRemoteJWKSet(
+  new URL("http://localhost:3000/api/auth/jwks")
+);
 
+const verifyToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  console.log("Authorization header:", authHeader);
+if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
 
+  const token = authHeader.split(" ")[1];
+  console.log("token:", token);
+
+  try {
+    const { payload } = await jwtVerify(token, JWKS);
+    console.log("payload:", payload);
+  req.user = payload;
+    next();
+  } catch (error) {
+    console.error("Token verification failed:", error.message);
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+};
 // http://localhost:5000/add-event
 app.post('/add-event', async (req, res) => {
   const data = req.body
