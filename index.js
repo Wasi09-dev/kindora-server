@@ -24,28 +24,34 @@ const db = mongoClient.db("kindora")
 const eventCollection = db.collection("event")
 const joinCollection = db.collection("joins");
 
-const JWKS = createRemoteJWKSet(
-  new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
-);
+const JWKS_URL =
+  process.env.JWKS_URL ||
+  (process.env.VERCEL
+    ? "https://kindora-two.vercel.app/api/auth/jwks"
+    : "http://localhost:3000/api/auth/jwks");
+
+const JWKS = createRemoteJWKSet(new URL(JWKS_URL));
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  console.log("Authorization header:", authHeader);
-if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).send({ message: "unauthorized access" });
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res
+      .status(401)
+      .send({ message: "unauthorized access", reason: "no bearer token" });
   }
 
   const token = authHeader.split(" ")[1];
-  console.log("token:", token);
 
   try {
     const { payload } = await jwtVerify(token, JWKS);
-    console.log("payload:", payload);
-  req.user = payload;
+    req.user = payload;
     next();
   } catch (error) {
     console.error("Token verification failed:", error.message);
-    return res.status(401).send({ message: "unauthorized access" });
+    
+      .status(401)
+      .send({ message: "unauthorized access", reason: error.message });
   }
 };
 // http://localhost:5000/add-event
