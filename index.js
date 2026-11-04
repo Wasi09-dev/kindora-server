@@ -24,30 +24,8 @@ const db = mongoClient.db("kindora")
 const eventCollection = db.collection("event")
 const joinCollection = db.collection("joins");
 
-const JWKS = createRemoteJWKSet(
-  new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
-);
 
-const verifyToken = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  console.log("Authorization header:", authHeader);
-if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).send({ message: "unauthorized access" });
-  }
 
-  const token = authHeader.split(" ")[1];
-  console.log("token:", token);
-
-  try {
-    const { payload } = await jwtVerify(token, JWKS);
-    console.log("payload:", payload);
-  req.user = payload;
-    next();
-  } catch (error) {
-    console.error("Token verification failed:", error.message);
-    return res.status(401).send({ message: "unauthorized access" });
-  }
-};
 // http://localhost:5000/add-event
 app.post('/add-event', async (req, res) => {
   const data = req.body
@@ -89,7 +67,7 @@ app.post("/join-event",  async (req, res) => {
   res.send(result);
 });
 
-app.get("/joined-events", , async (req, res) => {
+app.get("/joined-events",  async (req, res) => {
   const result = await joinCollection.find({ userEmail: req.query.email }).toArray();
 
   res.send(result);
