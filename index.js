@@ -61,13 +61,13 @@ app.get('/events', async (req , res)=>{
     res.send(result)
 })
 
-app.get('/events/:id', verifyToken, async(req,res)=>{
+app.get('/events/:id',  async(req,res)=>{
     const {id} = req.params
     const result = await eventCollection.findOne({_id: new ObjectId(id)})
     res.send(result)
 })
 
-app.put('/events/:id', async (req,res)=>{
+app.put('/events/:id', verifyToken, async (req,res)=>{
 const {id} = req.params
 const data = req.body 
 const result = await eventCollection.updateOne(
@@ -78,18 +78,18 @@ res.send(result)
 
 })
 
-app.delete('/events/:id', async (req,res)=>{
+app.delete('/events/:id', verifyToken, async (req,res)=>{
     const {id} = req.params
     const result = await eventCollection.deleteOne({_id:new ObjectId(id)})
     res.send(result)
 })
 
-app.post("/join-event", async (req, res) => {
+app.post("/join-event", verifyToken, async (req, res) => {
   const result = await joinCollection.insertOne(req.body);
   res.send(result);
 });
 
-app.get("/joined-events", async (req, res) => {
+app.get("/joined-events", verifyToken, async (req, res) => {
   const result = await joinCollection.find({ userEmail: req.query.email }).toArray();
 
   res.send(result);
